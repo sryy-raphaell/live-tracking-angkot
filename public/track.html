@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Live Tracking Angkot</title>
+    <title>Live Tracking Bus</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -36,7 +36,7 @@
 
     <script>
         const params = new URLSearchParams(window.location.search);
-        const vehicleId = params.get('id') || 'Angkot-01';
+        const vehicleId = params.get('id') || 'BD-01';
         document.getElementById('vehicle-name').innerText = vehicleId;
 
         const dot = document.getElementById('dot');
@@ -50,7 +50,7 @@
             maxZoom: 19
         }).addTo(map);
 
-        const angkotIcon = L.divIcon({
+        const busIcon = L.divIcon({
             html: `<div style="
                 background: var(--accent, #0ea5e9);
                 border-radius:50%;
@@ -85,7 +85,7 @@
             const { lat, lng } = data;
 
             if (!marker) {
-                marker = L.marker([lat, lng], { icon: angkotIcon }).addTo(map);
+                marker = L.marker([lat, lng], { icon: busIcon }).addTo(map);
                 marker.bindPopup(`<b>${vehicleId}</b><br>Sedang beroperasi`).openPopup();
             } else {
                 marker.setLatLng([lat, lng]);

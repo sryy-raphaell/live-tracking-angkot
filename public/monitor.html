@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Monitor Semua Angkot</title>
+    <title>Monitor Semua Bus</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -62,40 +62,49 @@
         }).addTo(map);
 
         // ── State ──────────────────────────────────────────────────────────────
-        const vehicles = {};   // { vehicleId: { lat, lng, updatedAt, isOnline, marker } }
+        const vehicles = {};
 
         // ── Helpers ────────────────────────────────────────────────────────────
         function makeIcon(label, online) {
             return L.divIcon({
                 html: `<div style="
-                background: ${online ? '#0ea5e9' : '#475569'};
-                border-radius: 50% 50% 50% 0;
-                transform: rotate(-45deg);
-                width: 36px; height: 36px;
-                display: flex; align-items: center; justify-content: center;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-                border: 2px solid white;
-            ">
-                <span style="transform:rotate(45deg); font-size:16px;">🚐</span>
-            </div>
-            <div style="
-                text-align:center;
-                font-size:10px;
-                font-weight:700;
-                color:white;
-                background:${online ? '#0284c7' : '#334155'};
-                border-radius:4px;
-                padding:1px 4px;
-                margin-top:2px;
-                white-space:nowrap;
-                max-width:80px;
-                overflow:hidden;
-                text-overflow:ellipsis;
-            ">${label}</div>`,
+                    background: ${online ? '#0ea5e9' : '#475569'};
+                    border-radius: 50% 50% 50% 0;
+                    transform: rotate(-45deg);
+                    width: 36px; height: 36px;
+                    display: flex; align-items: center; justify-content: center;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                    border: 2px solid white;
+                ">
+                    <span style="transform:rotate(45deg); font-size:16px;">🚐</span>
+                </div>
+                <div style="
+                    text-align:center;
+                    font-size:10px;
+                    font-weight:700;
+                    color:white;
+                    background:${online ? '#0284c7' : '#334155'};
+                    border-radius:4px;
+                    padding:1px 4px;
+                    margin-top:2px;
+                    white-space:nowrap;
+                    max-width:80px;
+                    overflow:hidden;
+                    text-overflow:ellipsis;
+                ">${label}</div>`,
                 iconSize: [40, 52],
                 iconAnchor: [20, 48],
                 className: ''
             });
+        }
+
+        function makePopup(v) {
+            return `
+                <b>${v.vehicleCode}</b><br>
+                Sopir: ${v.driverName || '—'}<br>
+                ${v.route ? `Rute: ${v.route}<br>` : ''}
+                ${v.isOnline ? '🟢 Online' : '⚫ Offline'}
+            `;
         }
 
         function formatTime(ts) {
@@ -111,18 +120,17 @@
         }
 
         function updateStats() {
-            const all = Object.keys(vehicles).length;
+            const all    = Object.keys(vehicles).length;
             const online = Object.values(vehicles).filter(v => v.isOnline).length;
             document.getElementById('count-online').innerText = online;
-            document.getElementById('count-total').innerText = all;
+            document.getElementById('count-total').innerText  = all;
         }
 
         function renderSidebar() {
-            const list = document.getElementById('vehicle-list');
+            const list   = document.getElementById('vehicle-list');
             const sorted = Object.values(vehicles).sort((a, b) => {
-                // Online dulu, lalu urutkan alphabetical
                 if (a.isOnline !== b.isOnline) return b.isOnline - a.isOnline;
-                return a.vehicleId.localeCompare(b.vehicleId);
+                return (a.vehicleCode || '').localeCompare(b.vehicleCode || '');
             });
 
             if (!sorted.length) {
@@ -131,75 +139,121 @@
             }
 
             list.innerHTML = sorted.map(v => `
-            <div class="v-item" id="item-${v.vehicleId}" onclick="focusVehicle('${v.vehicleId}')">
-                <div class="v-item-top">
-                    <div class="v-name-row">
-                        <div class="v-dot ${v.isOnline ? 'online' : ''}"></div>
-                        <span class="v-name">${v.vehicleId}</span>
+                <div class="v-item" id="item-${v.vehicleCode}" onclick="focusVehicle('${v.vehicleCode}')">
+                    <div class="v-item-top">
+                        <div class="v-name-row">
+                            <div class="v-dot ${v.isOnline ? 'online' : ''}"></div>
+                            <span class="v-name">${v.vehicleCode}</span>
+                        </div>
+                        <span class="v-badge ${v.isOnline ? 'online' : 'offline'}">
+                            ${v.isOnline ? 'Online' : 'Offline'}
+                        </span>
                     </div>
-                    <span class="v-badge ${v.isOnline ? 'online' : 'offline'}">
-                        ${v.isOnline ? 'Online' : 'Offline'}
-                    </span>
+
+                    <!-- Nama sopir -->
+                    <div style="
+                        font-size: 0.78rem;
+                        color: var(--accent-light);
+                        margin: 4px 0 2px 15px;
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                    ">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M20 21a8 8 0 1 0-16 0"/>
+                        </svg>
+                        ${v.driverName || '—'}
+                    </div>
+
+                    <!-- Rute (kalau ada) -->
+                    ${v.route ? `
+                    <div style="
+                        font-size: 0.7rem;
+                        color: var(--text-dim);
+                        margin: 1px 0 2px 15px;
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                    ">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12h18M3 6h18M3 18h18"/>
+                        </svg>
+                        ${v.route}
+                    </div>` : ''}
+
+                    <!-- Koordinat -->
+                    <div class="v-coords" style="margin-left:15px;">
+                        ${v.lat ? `${Number(v.lat).toFixed(5)}, ${Number(v.lng).toFixed(5)}` : 'Lokasi belum tersedia'}
+                    </div>
+
+                    <!-- Waktu update -->
+                    <div class="v-time" style="margin-left:15px;">
+                        ${v.updatedAt ? 'Update: ' + formatTime(v.updatedAt) : ''}
+                    </div>
                 </div>
-                <div class="v-coords">
-                    ${v.lat ? `${v.lat.toFixed(5)}, ${v.lng.toFixed(5)}` : 'Lokasi belum tersedia'}
-                </div>
-                <div class="v-time">
-                    ${v.updatedAt ? 'Update: ' + formatTime(v.updatedAt) : ''}
-                </div>
-            </div>
-        `).join('');
+            `).join('');
         }
 
-        function focusVehicle(vehicleId) {
-            const v = vehicles[vehicleId];
+        function focusVehicle(vehicleCode) {
+            const v = vehicles[vehicleCode];
             if (!v || !v.lat) return;
-
             map.setView([v.lat, v.lng], 16);
             if (v.marker) v.marker.openPopup();
-
-            // Highlight item di sidebar
             document.querySelectorAll('.v-item').forEach(el => el.classList.remove('active'));
-            const item = document.getElementById(`item-${vehicleId}`);
+            const item = document.getElementById(`item-${vehicleCode}`);
             if (item) item.classList.add('active');
         }
 
         function upsertVehicle(data) {
-            const { vehicleId, lat, lng, updatedAt, isOnline } = data;
-            const existing = vehicles[vehicleId];
+            // Normalkan field — server lama pakai vehicleId, server baru pakai vehicleCode
+            const vehicleCode = data.vehicleCode || data.vehicleId || data.id;
+            if (!vehicleCode) return;
+
+            const existing  = vehicles[vehicleCode];
             const wasOnline = existing?.isOnline;
 
-            // Update atau buat entry
-            vehicles[vehicleId] = {
+            vehicles[vehicleCode] = {
                 ...(existing || {}),
-                vehicleId, lat, lng, updatedAt,
-                isOnline: isOnline !== undefined ? isOnline : (existing?.isOnline ?? false)
+                vehicleCode,
+                lat:        data.lat        ?? existing?.lat,
+                lng:        data.lng        ?? existing?.lng,
+                updatedAt:  data.updatedAt  ?? existing?.updatedAt,
+                driverName: data.driverName ?? existing?.driverName ?? '—',
+                route:      data.route      ?? existing?.route      ?? '',
+                isOnline:   data.isOnline !== undefined
+                                ? data.isOnline
+                                : (existing?.isOnline ?? false)
             };
 
-            const v = vehicles[vehicleId];
+            const v = vehicles[vehicleCode];
 
-            // Update atau buat marker di peta
-            if (lat && lng) {
-                const icon = makeIcon(vehicleId, v.isOnline);
+            // Update / buat marker peta
+            if (v.lat && v.lng) {
+                const icon   = makeIcon(vehicleCode, v.isOnline);
+                const popup  = makePopup(v);
                 if (!v.marker) {
-                    v.marker = L.marker([lat, lng], { icon })
+                    v.marker = L.marker([v.lat, v.lng], { icon })
                         .addTo(map)
-                        .bindPopup(`<b>${vehicleId}</b><br>${v.isOnline ? '🟢 Online' : '⚫ Offline'}`);
+                        .bindPopup(popup);
                 } else {
-                    v.marker.setLatLng([lat, lng]);
+                    v.marker.setLatLng([v.lat, v.lng]);
                     v.marker.setIcon(icon);
-                    v.marker.setPopupContent(`<b>${vehicleId}</b><br>${v.isOnline ? '🟢 Online' : '⚫ Offline'}`);
+                    v.marker.setPopupContent(popup);
                 }
-                vehicles[vehicleId].marker = v.marker;
+                vehicles[vehicleCode].marker = v.marker;
             }
 
             // Toast notifikasi perubahan status
             if (existing && wasOnline !== v.isOnline) {
-                if (v.isOnline) {
-                    showToast(`🟢 ${vehicleId} mulai bertugas`);
-                } else {
-                    showToast(`⚫ ${vehicleId} offline`);
-                }
+                showToast(v.isOnline
+                    ? `🟢 ${vehicleCode} mulai bertugas`
+                    : `⚫ ${vehicleCode} offline`
+                );
             }
 
             updateStats();
@@ -218,17 +272,17 @@
             document.getElementById('conn-status').innerText = '⚠️ Koneksi terputus';
         });
 
-        // Snapshot awal semua kendaraan
         socket.on('allLocations', (list) => {
             list.forEach(v => upsertVehicle(v));
             document.getElementById('conn-status').innerText = 'Live · Auto-update';
 
-            // Fit peta ke semua marker kalau ada
-            const points = Object.values(vehicles).filter(v => v.lat).map(v => [v.lat, v.lng]);
+            // Fit peta ke semua marker kalau lebih dari 1
+            const points = Object.values(vehicles)
+                .filter(v => v.lat)
+                .map(v => [v.lat, v.lng]);
             if (points.length > 1) map.fitBounds(points, { padding: [40, 40] });
         });
 
-        // Update realtime per kendaraan
         socket.on('vehicleUpdate', (data) => {
             upsertVehicle(data);
         });

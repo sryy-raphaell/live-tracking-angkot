@@ -86,23 +86,23 @@
             color: var(--text-muted);
         }
 
-        /* ── Daftar angkot ── */
-        #angkot-list {
+        /* ── Daftar bus ── */
+        #bus-list {
             flex: 1;
             overflow-y: auto;
             padding: var(--sp-sm);
         }
 
-        #angkot-list::-webkit-scrollbar {
+        #bus-list::-webkit-scrollbar {
             width: 4px;
         }
 
-        #angkot-list::-webkit-scrollbar-thumb {
+        #bus-list::-webkit-scrollbar-thumb {
             background: var(--border-color);
             border-radius: 2px;
         }
 
-        .angkot-item {
+        .bus-item {
             background: var(--bg-primary);
             border-radius: var(--radius-lg);
             padding: var(--sp-md) 14px;
@@ -113,15 +113,15 @@
             position: relative;
         }
 
-        .angkot-item:hover {
+        .bus-item:hover {
             border-color: var(--accent);
         }
 
-        .angkot-item.nearest {
+        .bus-item.nearest {
             border-color: var(--success);
         }
 
-        .angkot-item.offline {
+        .bus-item.offline {
             opacity: 0.45;
         }
 
@@ -138,14 +138,14 @@
             text-transform: uppercase;
         }
 
-        .angkot-top {
+        .bus-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: var(--sp-sm);
         }
 
-        .angkot-name-row {
+        .bus-name-row {
             display: flex;
             align-items: center;
             gap: var(--sp-sm);
@@ -176,7 +176,7 @@
             }
         }
 
-        .angkot-name {
+        .bus-name {
             font-size: 0.88rem;
             font-weight: 700;
         }
@@ -208,12 +208,12 @@
             color: var(--text-faint);
         }
 
-        .angkot-detail {
+        .bus-detail {
             font-size: var(--fs-sm);
             color: var(--text-dim);
         }
 
-        .angkot-detail span {
+        .bus-detail span {
             color: var(--text-muted);
         }
 

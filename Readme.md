@@ -1,6 +1,6 @@
-# 🚐 Live Tracking Angkot
+# 🚐 Live Tracking Bus
 
-Sistem live tracking angkutan umum berbasis web. Penumpang scan QR → lihat posisi angkot realtime di peta.
+Sistem live tracking angkutan umum berbasis web. Penumpang scan QR → lihat posisi realtime di peta.
 
 ## Cara Pakai
 
@@ -15,11 +15,11 @@ Server akan jalan di `http://localhost:3000`
 
 ### 2. Alur Penggunaan
 
-| Halaman   | URL                         | Untuk                                |
-| --------- | --------------------------- | ------------------------------------ |
-| Admin     | `/`                         | Generate QR & pantau semua kendaraan |
-| Sopir     | `/driver.html?id=Angkot-01` | Kirim lokasi GPS                     |
-| Penumpang | `/track.html?id=Angkot-01`  | Lihat peta realtime                  |
+| Halaman   | URL                     | Untuk                                |
+| --------- | ----------------------- | ------------------------------------ |
+| Admin     | `/`                     | Generate QR & pantau semua kendaraan |
+| Sopir     | `/driver.html?id=BD-01` | Kirim lokasi GPS                     |
+| Penumpang | `/track.html?id=BD-01`  | Lihat peta realtime                  |
 
 ### 3. Langkah di Lapangan
 

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Angkot Terdekat</title>
+    <title>Bus Terdekat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -19,7 +19,7 @@
         <div>
             <h1>
                 <i data-lucide="bus-front" class="icon" style="color: var(--accent);"></i>
-                Angkot Terdekat
+                Bus Terdekat
             </h1>
             <p id="header-status">Memuat lokasi kamu...</p>
         </div>
@@ -31,7 +31,7 @@
             <i data-lucide="map-pin" class="icon-xl"></i>
         </div>
         <h2>Izinkan Akses Lokasi</h2>
-        <p>Agar bisa menampilkan angkot terdekat,<br>aplikasi perlu mengetahui posisi kamu sekarang.</p>
+        <p>Agar bisa menampilkan bus terdekat,<br>aplikasi perlu mengetahui posisi kamu sekarang.</p>
         <button class="btn btn-primary" onclick="requestLocation()">
             <i data-lucide="locate-fixed" class="icon-sm"></i>
             Izinkan Lokasi Saya
@@ -52,10 +52,10 @@
             </div>
             <div class="panel-section">
                 <i data-lucide="list" class="icon-sm"></i>
-                Daftar Angkot
+                Daftar Bus
             </div>
-            <div id="angkot-list">
-                <div class="info-msg">Memuat data angkot...</div>
+            <div id="bus-list">
+                <div class="info-msg">Memuat data bus...</div>
             </div>
         </div>
     </div>
@@ -113,7 +113,7 @@
             }).addTo(map).bindPopup('📍 Posisi kamu').openPopup();
         }
 
-        function makeAngkotIcon(label, online) {
+        function makeBusIcon(label, online) {
             return L.divIcon({
                 html: `<div style="
                 background:${online ? '#0ea5e9' : '#475569'};
@@ -136,9 +136,9 @@
             });
         }
 
-        // ── Render daftar angkot di sidebar ───────────────────────────────────
+        // ── Render daftar bus di sidebar ───────────────────────────────────
         function renderList() {
-            const list = document.getElementById('angkot-list');
+            const list = document.getElementById('bus-list');
 
             const sorted = Object.values(vehicles)
                 .map(v => {
@@ -155,7 +155,7 @@
                 });
 
             if (!sorted.length) {
-                list.innerHTML = '<div class="info-msg">Belum ada angkot aktif saat ini.</div>';
+                list.innerHTML = '<div class="info-msg">Belum ada bus aktif saat ini.</div>';
                 return;
             }
 
@@ -163,19 +163,19 @@
                 const isNearest = i === 0 && v.isOnline && v.dist !== null;
                 const eta = v.isOnline ? etaText(v.dist) : null;
                 return `
-            <div class="angkot-item ${isNearest ? 'nearest' : ''} ${!v.isOnline ? 'offline' : ''}"
-                 onclick="focusAngkot('${v.vehicleId}')">
+            <div class="bus-item ${isNearest ? 'nearest' : ''} ${!v.isOnline ? 'offline' : ''}"
+                 onclick="focusBus('${v.vehicleId}')">
                 ${isNearest ? '<div class="nearest-badge">Terdekat</div>' : ''}
-                <div class="angkot-top">
-                    <div class="angkot-name-row">
+                <div class="bus-top">
+                    <div class="bus-name-row">
                         <div class="a-dot ${v.isOnline ? 'online' : ''}"></div>
-                        <span class="angkot-name">${v.vehicleId}</span>
+                        <span class="bus-name">${v.vehicleId}</span>
                     </div>
                     <span class="distance-badge ${distanceClass(v.dist)}">
                         ${v.dist !== null ? formatJarak(v.dist) : 'Offline'}
                     </span>
                 </div>
-                <div class="angkot-detail">
+                <div class="bus-detail">
                     Sopir: <span>${v.driverName || '—'}</span>
                 </div>
                 ${eta ? `<div class="eta-text">${eta}</div>` : ''}
@@ -186,7 +186,7 @@
             lucide.createIcons();
         }
 
-        function focusAngkot(vehicleId) {
+        function focusBus(vehicleId) {
             const v = vehicles[vehicleId];
             if (!v || !v.lat) return;
             map.setView([v.lat, v.lng], 16);
@@ -207,7 +207,7 @@
 
             // Update marker peta
             if (map && lat && lng) {
-                const icon = makeAngkotIcon(vehicleId, v.isOnline);
+                const icon = makeBusIcon(vehicleId, v.isOnline);
                 const popup = `<b>${vehicleId}</b><br>Sopir: ${v.driverName || '—'}<br>${v.isOnline ? '🟢 Online' : '⚫ Offline'}`;
                 if (!v.marker) {
                     v.marker = L.marker([lat, lng], { icon }).addTo(map).bindPopup(popup);

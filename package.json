@@ -1,13 +1,17 @@
 {
-  "name": "live-tracking-angkot",
-  "version": "1.0.0",
+  "name": "live-tracking-bus",
+  "version": "2.0.0",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "db:init": "psql $DATABASE_URL -f db/schema.sql",
+    "db:seed": "psql $DATABASE_URL -f db/seed.sql"
   },
   "dependencies": {
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "pg": "^8.11.3",
     "socket.io": "^4.6.1"
   }
 }
